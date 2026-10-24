@@ -1,0 +1,534 @@
+{
+  "auth": {
+    "type": "noauth"
+  },
+  "info": {
+    "name": "Account Service API",
+    "_postman_id": "3c707bd7-84d9-42a7-b16d-08e9914cfc55",
+    "description": "Collection for testing account-service HTTP endpoints.\n\nProtected endpoints use Bearer token from {{accessToken}}.\nInternal endpoints use X-API-KEY from {{internalApiKey}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Public",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Public health endpoint.",
+            "method": "GET",
+            "header": [],
+            "url": "{{accountBaseUrl}}/api/v1/health"
+          },
+          "response": []
+        },
+        {
+          "name": "Swagger UI",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Swagger UI entrypoint.",
+            "method": "GET",
+            "header": [],
+            "url": "{{accountBaseUrl}}/api/v1/swagger/index.html"
+          },
+          "response": []
+        },
+        {
+          "name": "Prometheus Metrics",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Prometheus metrics endpoint.",
+            "method": "GET",
+            "header": [],
+            "url": "{{accountBaseUrl}}/metrics"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Accounts (User Auth)",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "type": "string",
+            "value": "{{accessToken}}"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Get Balances",
+          "request": {
+            "description": "Returns authenticated user balances by asset and account type.",
+            "method": "GET",
+            "header": [],
+            "url": "{{accountBaseUrl}}/api/v1/accounts/get-balances"
+          },
+          "response": []
+        },
+        {
+          "name": "Get PnL",
+          "request": {
+            "description": "Returns authenticated user PnL snapshot.",
+            "method": "GET",
+            "header": [],
+            "url": "{{accountBaseUrl}}/api/v1/accounts/get-pnl"
+          },
+          "response": []
+        },
+        {
+          "name": "Init Deposit Address",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "try {",
+                  "  var json = pm.response.json();",
+                  "  if (json && json.data) {",
+                  "    if (json.data.address) {",
+                  "      pm.environment.set(\"depositAddress\", String(json.data.address));",
+                  "    }",
+                  "    if (json.data.min_confirmations !== undefined && json.data.min_confirmations !== null) {",
+                  "      pm.environment.set(\"requiredConfirmations\", String(json.data.min_confirmations));",
+                  "    }",
+                  "  }",
+                  "} catch (e) {}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "description": "Allocates or returns deposit address for the authenticated user.",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"asset\": \"{{assetCode}}\",\n  \"network\": \"{{networkCode}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{accountBaseUrl}}/api/v1/accounts/deposits/init"
+          },
+          "response": []
+        },
+        {
+          "name": "Init Withdrawal",
+          "request": {
+            "description": "Creates a withdrawal request for the authenticated user.",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"asset\": \"{{assetCode}}\",\n  \"network\": \"{{networkCode}}\",\n  \"to_address\": \"{{withdrawalToAddress}}\",\n  \"amount\": \"10.00\",\n  \"fee_tier\": \"{{feeTier}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{accountBaseUrl}}/api/v1/accounts/withdrawals/init"
+          },
+          "response": []
+        },
+        {
+          "name": "Init Transfer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "try {",
+                  "  var json = pm.response.json();",
+                  "  if (json && json.data && json.data.journalId) {",
+                  "    pm.environment.set(\"accountJournalId\", String(json.data.journalId));",
+                  "  }",
+                  "} catch (e) {}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "description": "Transfers funds from the authenticated user to another user number.",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"asset\": \"{{assetCode}}\",\n  \"toUserNumber\": {{transferToUserNumber}},\n  \"amount\": \"5.00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{accountBaseUrl}}/api/v1/accounts/transfers/init"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "History (User Auth)",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "type": "string",
+            "value": "{{accessToken}}"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "List Transactions",
+          "request": {
+            "description": "Returns transaction history with optional filters.",
+            "method": "GET",
+            "header": [],
+            "url": "{{accountBaseUrl}}/api/v1/history/transactions?page=1&per-page=10&asset={{assetCode}}"
+          },
+          "response": []
+        },
+        {
+          "name": "List Deposits",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "try {",
+                  "  var json = pm.response.json();",
+                  "  if (json && json.data && Array.isArray(json.data.items) && json.data.items.length > 0) {",
+                  "    var first = json.data.items[0];",
+                  "    if (first.id !== undefined && first.id !== null) {",
+                  "      pm.environment.set(\"depositRequestId\", String(first.id));",
+                  "    }",
+                  "    if (first.address) {",
+                  "      pm.environment.set(\"depositAddress\", String(first.address));",
+                  "    }",
+                  "  }",
+                  "} catch (e) {}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "description": "Returns deposit history with optional asset/status filters.",
+            "method": "GET",
+            "header": [],
+            "url": "{{accountBaseUrl}}/api/v1/history/deposits?page=1&per-page=10&asset={{assetCode}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Deposit Details",
+          "request": {
+            "description": "Returns details for selected deposit request ID.",
+            "method": "GET",
+            "header": [],
+            "url": "{{accountBaseUrl}}/api/v1/history/deposits/{{depositRequestId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "List Withdrawals",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "try {",
+                  "  var json = pm.response.json();",
+                  "  if (json && json.data && Array.isArray(json.data.items) && json.data.items.length > 0) {",
+                  "    var first = json.data.items[0];",
+                  "    if (first.id !== undefined && first.id !== null) {",
+                  "      pm.environment.set(\"withdrawalRequestId\", String(first.id));",
+                  "    }",
+                  "  }",
+                  "} catch (e) {}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "description": "Returns withdrawal history with optional asset/status filters.",
+            "method": "GET",
+            "header": [],
+            "url": "{{accountBaseUrl}}/api/v1/history/withdrawals?page=1&per-page=10&asset={{assetCode}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Withdrawal Details",
+          "request": {
+            "description": "Returns details for selected withdrawal request ID.",
+            "method": "GET",
+            "header": [],
+            "url": "{{accountBaseUrl}}/api/v1/history/withdrawals/{{withdrawalRequestId}}"
+          },
+          "response": []
+        },
+        {
+          "name": "List Transfers",
+          "request": {
+            "description": "Returns transfer history with optional asset filter.",
+            "method": "GET",
+            "header": [],
+            "url": "{{accountBaseUrl}}/api/v1/history/transfers?page=1&per-page=10&asset={{assetCode}}"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Blockchain (User Auth)",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "type": "string",
+            "value": "{{accessToken}}"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Get Fee Estimate",
+          "request": {
+            "description": "Returns blockchain fee tiers for current network and asset.",
+            "method": "GET",
+            "header": [],
+            "url": "{{accountBaseUrl}}/api/v1/blockchain/fees/{{networkCode}}/{{assetCode}}"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Chain Configs",
+          "request": {
+            "description": "Returns supported blockchain config matrix.",
+            "method": "GET",
+            "header": [],
+            "url": "{{accountBaseUrl}}/api/v1/blockchain/configs"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Internal (X-API-KEY)",
+      "auth": {
+        "type": "apikey",
+        "apikey": [
+          {
+            "key": "key",
+            "type": "string",
+            "value": "X-API-KEY"
+          },
+          {
+            "key": "value",
+            "type": "string",
+            "value": "{{internalApiKey}}"
+          },
+          {
+            "key": "in",
+            "type": "string",
+            "value": "header"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Process Blockchain Transaction Webhook",
+          "request": {
+            "description": "Simulates inbound blockchain transaction processing. Use address from Init Deposit when testing deposit flow.",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"txid\": \"sim-tx-{{$guid}}\",\n  \"currency\": \"{{assetCode}}\",\n  \"network\": \"{{networkCode}}\",\n  \"type\": \"incoming\",\n  \"from_address\": \"{{blockchainFromAddress}}\",\n  \"to_address\": \"{{depositAddress}}\",\n  \"amount\": \"100.00\",\n  \"confirmations\": {{requiredConfirmations}},\n  \"required_confirmations\": {{requiredConfirmations}},\n  \"status\": \"confirmed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{accountBaseUrl}}/api/v1/internal/blockchain/webhooks/transaction/process"
+          },
+          "response": []
+        },
+        {
+          "name": "Approve Deposit Request",
+          "request": {
+            "description": "Approves a deposit request currently in manual review.",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"depositRequestId\": {{depositRequestId}},\n  \"operation\": \"approve\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{accountBaseUrl}}/api/v1/internal/accounts/deposits/operations"
+          },
+          "response": []
+        },
+        {
+          "name": "Resend Withdrawal Request",
+          "request": {
+            "description": "Resends withdrawal request to blockchain processing.",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"withdrawalRequestId\": {{withdrawalRequestId}},\n  \"operation\": \"resend\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{accountBaseUrl}}/api/v1/internal/accounts/withdrawals/operations"
+          },
+          "response": []
+        },
+        {
+          "name": "Reject Withdrawal Request",
+          "request": {
+            "description": "Rejects withdrawal request.",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"withdrawalRequestId\": {{withdrawalRequestId}},\n  \"operation\": \"reject\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{accountBaseUrl}}/api/v1/internal/accounts/withdrawals/operations"
+          },
+          "response": []
+        },
+        {
+          "name": "TopUp User Account (Dev Only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 200\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "try {",
+                  "  var json = pm.response.json();",
+                  "  if (json && json.data && json.data.journalId) {",
+                  "    pm.environment.set(\"accountJournalId\", String(json.data.journalId));",
+                  "  }",
+                  "} catch (e) {}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "description": "Local/dev-only account funding endpoint. Requires ENABLE_DEV_INTERNAL_ENDPOINTS=true and the internal security token.",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": {{userId}},\n  \"asset\": \"{{assetCode}}\",\n  \"amount\": \"100.00\",\n  \"idempotencyKey\": \"dev-topup-user-{{userId}}-{{assetCode}}-100\",\n  \"description\": \"Local funding for checkout test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{accountBaseUrl}}/api/v1/internal/dev/accounts/topup"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": []
+}

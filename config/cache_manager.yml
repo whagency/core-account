@@ -1,0 +1,10 @@
+global_cache_config:
+  size:     1073741824 # 1GB
+  max_keys: 1e6        # 1M
+cached_entities:
+  assets:
+    ttl: "5m"
+    global_local_cache: true
+  chain_configs:
+    ttl: "1h"
+    global_local_cache: true

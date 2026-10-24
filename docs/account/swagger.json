@@ -1,0 +1,1972 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "### 📘 Account Service API\nProvides wallet and ledger operations. It owns user and system accounts, balance mutations, transaction journaling, deposit and withdrawal request flows, transfer flows, blockchain transaction tracking, balance history snapshots, and related event publishing.\n### 🔑 Authentication\nSome endpoints require an **Authorization** header:\n\n```http\nAuthorization: Bearer \u003ctoken\u003e\n```",
+        "title": "Account Service",
+        "contact": {},
+        "version": "1.0.0"
+    },
+    "host": "https://api.app-stage.pro",
+    "basePath": "/account/",
+    "paths": {
+        "/api/v1/accounts/deposits/init": {
+            "post": {
+                "description": "Initializes a deposit address for the authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "Initialize a deposit address",
+                "parameters": [
+                    {
+                        "description": "Deposit address initialization payload. Allowed values: asset=USDT, network=trx.",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_handler_accounts_protected.initDepositRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deposit address initialized successfully.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_transport_http_handler_accounts_protected.initDepositResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed payload or unsupported asset/network.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to allocate address due to internal errors.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/accounts/get-balances": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Return the authenticated user's account balances for all asset codes and account types.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "Get user's account balances",
+                "responses": {
+                    "200": {
+                        "description": "User's account balances.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_transport_http_handler_accounts_protected.getBalancesResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed getting the account balances due to internal errors.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/accounts/get-pnl": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Return the authenticated user's account pnl for all asset codes and total value for today.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "Get user's account pnl",
+                "responses": {
+                    "200": {
+                        "description": "User's account pnl.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_transport_http_handler_accounts_protected.getPnlResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed getting the account pnl due to internal errors.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/accounts/transfers/init": {
+            "post": {
+                "description": "Performs an internal transfer between users.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "Transfer funds between users",
+                "parameters": [
+                    {
+                        "description": "Transfer payload. Allowed values: asset=USDT.",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_handler_accounts_protected.transferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transfer completed successfully.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_transport_http_handler_accounts_protected.transferResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Missing or malformed request payload.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to process transfer due to internal errors.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/accounts/withdrawals/init": {
+            "post": {
+                "description": "Initializes a withdrawal request for the authenticated user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "Initialize a withdrawal request",
+                "parameters": [
+                    {
+                        "description": "Withdrawal initialization payload. Allowed values: asset=USDT, network=trx, fee_tier=slow|standard|fast.",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_handler_accounts_protected.initWithdrawalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Withdrawal initialized successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Missing or malformed request payload.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Authentication required.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to initialize withdrawal due to internal errors.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/blockchain/configs": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Return a chain configs list.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "blockchain"
+                ],
+                "summary": "Get a chain configs list",
+                "responses": {
+                    "200": {
+                        "description": "Chain configs list.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_transport_http_handler_blockchain.chainConfigListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed getting a chain configs list due to internal errors.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/blockchain/fees/{network}/{asset}": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Return the blockchain gas fee list and estimated time for sending transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "blockchain"
+                ],
+                "summary": "Get the blockchain gas fee list",
+                "parameters": [
+                    {
+                        "enum": [
+                            "trx"
+                        ],
+                        "type": "string",
+                        "description": "Blockchain network name",
+                        "name": "network",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "USDT"
+                        ],
+                        "type": "string",
+                        "description": "Blockchain asset code",
+                        "name": "asset",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Blockchain fee list.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_transport_http_handler_blockchain.getFeeResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed getting the fee list due to internal errors.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/history/deposits": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Retrieves a deposit list for the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "history"
+                ],
+                "summary": "Deposit list",
+                "parameters": [
+                    {
+                        "maxLength": 8,
+                        "minLength": 2,
+                        "enum": [
+                            "USDT"
+                        ],
+                        "type": "string",
+                        "example": "USDT",
+                        "name": "asset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "PageSize is capped at 100; a larger value is clamped, not rejected.",
+                        "name": "per-page",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "new",
+                            "pending",
+                            "success",
+                            "failed",
+                            "blocked",
+                            "manual_review"
+                        ],
+                        "type": "string",
+                        "example": "new",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deposit list.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_transport_http_handler_history_protected.depositListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to retrieve deposits due to internal issues.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/history/deposits/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Retrieves deposit details for the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "history"
+                ],
+                "summary": "Deposit details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deposit ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deposit details.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_transport_http_handler_history_protected.depositDetailsResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to retrieve deposits due to internal issues.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/history/transactions": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Retrieves a transaction list for the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "history"
+                ],
+                "summary": "Transaction list",
+                "parameters": [
+                    {
+                        "enum": [
+                            "liability",
+                            "hold",
+                            "revenue",
+                            "expense"
+                        ],
+                        "type": "string",
+                        "example": "liability",
+                        "name": "accountType",
+                        "in": "query"
+                    },
+                    {
+                        "maxLength": 8,
+                        "minLength": 2,
+                        "enum": [
+                            "USDT"
+                        ],
+                        "type": "string",
+                        "example": "USDT",
+                        "name": "asset",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "deposit",
+                            "withdrawal_request",
+                            "withdrawal_complete",
+                            "withdrawal_reject",
+                            "withdrawal_cancel",
+                            "transfer",
+                            "checkout_payment",
+                            "checkout_payment_hold",
+                            "checkout_payment_hold_release"
+                        ],
+                        "type": "string",
+                        "example": "deposit",
+                        "name": "entryType",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "PageSize is capped at 100; a larger value is clamped, not rejected.",
+                        "name": "per-page",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "pending",
+                            "completed",
+                            "failed",
+                            "cancelled",
+                            "reversed"
+                        ],
+                        "type": "string",
+                        "example": "pending",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "credit",
+                            "debit",
+                            "fee"
+                        ],
+                        "type": "string",
+                        "example": "credit",
+                        "name": "type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transaction list.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_transport_http_handler_history_protected.transactionListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to retrieve transactions due to internal issues.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/history/transfers": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Retrieves a transfer list for the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "history"
+                ],
+                "summary": "Transfer list",
+                "parameters": [
+                    {
+                        "maxLength": 8,
+                        "minLength": 2,
+                        "enum": [
+                            "USDT"
+                        ],
+                        "type": "string",
+                        "example": "USDT",
+                        "name": "asset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "PageSize is capped at 100; a larger value is clamped, not rejected.",
+                        "name": "per-page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transfer list.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_transport_http_handler_history_protected.transferListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to retrieve transfers due to internal issues.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/history/withdrawals": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Retrieves a withdrawal list for the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "history"
+                ],
+                "summary": "Withdrawal list",
+                "parameters": [
+                    {
+                        "maxLength": 8,
+                        "minLength": 2,
+                        "enum": [
+                            "USDT"
+                        ],
+                        "type": "string",
+                        "example": "USDT",
+                        "name": "asset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "PageSize is capped at 100; a larger value is clamped, not rejected.",
+                        "name": "per-page",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "new",
+                            "pending",
+                            "success",
+                            "failed",
+                            "cancelled",
+                            "blocked",
+                            "rejected",
+                            "manual_review"
+                        ],
+                        "type": "string",
+                        "example": "new",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Withdrawal list.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_transport_http_handler_history_protected.withdrawalListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to retrieve withdrawals due to internal issues.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/history/withdrawals/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Authorization": []
+                    }
+                ],
+                "description": "Retrieves withdrawal details for the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "history"
+                ],
+                "summary": "Withdrawal details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Withdrawal ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Withdrawal details.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_transport_http_handler_history_protected.withdrawalDetailsResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid access token.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Unable to retrieve withdrawals due to internal issues.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/internal/accounts/deposits/operations": {
+            "post": {
+                "description": "Performs operations on deposit requests, such as resending to blockchain or rejecting the request.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "Perform deposit operations",
+                "parameters": [
+                    {
+                        "description": "Deposit operation payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_handler_accounts_protected.depositOperationsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deposit operation completed successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Missing or malformed request payload.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to perform withdrawal operation due to internal errors.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/internal/accounts/withdrawals/operations": {
+            "post": {
+                "description": "Performs operations on withdrawal requests, such as resending to blockchain or rejecting the request.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "Perform withdrawal operations",
+                "parameters": [
+                    {
+                        "description": "Withdrawal operation payload. Allowed values: operation=reject|resend.",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_handler_accounts_protected.withdrawalOperationsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Withdrawal operation completed successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Missing or malformed request payload.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to perform withdrawal operation due to internal errors.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/internal/blockchain/webhooks/transaction/process": {
+            "post": {
+                "description": "Processes a blockchain transaction notification from a node.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "blockchain"
+                ],
+                "summary": "Process blockchain transaction",
+                "parameters": [
+                    {
+                        "description": "Blockchain transaction payload. Allowed values: currency=USDT, network=trx, type=incoming|outgoing, status=new|pending|confirmed|failed|ignored|blocked.",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_handler_blockchain_webhooks.processTxRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transaction processed successfully.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Malformed payload or unsupported asset/network.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to process transaction due to internal errors.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/internal/dev/accounts/topup": {
+            "post": {
+                "description": "Credits a user's balance through the regular deposit journal type for local/dev testing scenarios.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "summary": "Local dev balance top-up",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Internal security token",
+                        "name": "X-API-KEY",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Local/dev-only balance top-up payload. Allowed values: asset=USDT.",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_transport_http_handler_accounts_protected.topUpUserAccountRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Balance funded successfully.",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_transport_http_handler_accounts_protected.topUpUserAccountResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Missing or malformed request payload.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Missing or invalid internal security token.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fund balance due to internal errors.",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_whagency_common_http.Response"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "github_com_whagency_common_http.Response": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "0 indicates success, \u003e 0 indicates an error",
+                    "type": "integer"
+                },
+                "data": {
+                    "description": "The actual response data object",
+                    "type": "object"
+                },
+                "message": {
+                    "description": "\"success\" for successful responses, error message for errors",
+                    "type": "string"
+                },
+                "meta": {
+                    "description": "Metadata about the response",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/http.metaResponse"
+                        }
+                    ]
+                }
+            }
+        },
+        "http.Pagination": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "shownFrom": {
+                    "type": "integer"
+                },
+                "shownTo": {
+                    "type": "integer"
+                },
+                "totalCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "http.metaResponse": {
+            "type": "object",
+            "properties": {
+                "requestId": {
+                    "type": "string",
+                    "example": "010a0998-4b1a-4e70-a951-d27a40b49c0c"
+                },
+                "timestamp": {
+                    "type": "string",
+                    "example": "2025-10-07T12:00:45.327647382Z"
+                }
+            }
+        },
+        "internal_transport_http_handler_accounts_protected.assetPnlResponse": {
+            "type": "object",
+            "properties": {
+                "pnlAmount": {
+                    "type": "number",
+                    "example": 1200.056
+                },
+                "pnlPercent": {
+                    "type": "string",
+                    "example": "12.5"
+                }
+            }
+        },
+        "internal_transport_http_handler_accounts_protected.depositOperationsRequest": {
+            "type": "object",
+            "required": [
+                "depositRequestId",
+                "operation"
+            ],
+            "properties": {
+                "depositRequestId": {
+                    "type": "integer",
+                    "example": 120
+                },
+                "operation": {
+                    "type": "string",
+                    "example": "approve"
+                }
+            }
+        },
+        "internal_transport_http_handler_accounts_protected.getBalancesResponse": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "additionalProperties": {
+                    "type": "number"
+                }
+            }
+        },
+        "internal_transport_http_handler_accounts_protected.getPnlResponse": {
+            "type": "object",
+            "properties": {
+                "pnlAssets": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/internal_transport_http_handler_accounts_protected.assetPnlResponse"
+                    }
+                },
+                "pnlTotalAmount": {
+                    "type": "number",
+                    "example": 340.76
+                },
+                "pnlTotalPercent": {
+                    "type": "string",
+                    "example": "12.5"
+                }
+            }
+        },
+        "internal_transport_http_handler_accounts_protected.initDepositRequest": {
+            "type": "object",
+            "required": [
+                "asset",
+                "network"
+            ],
+            "properties": {
+                "asset": {
+                    "type": "string",
+                    "enum": [
+                        "USDT"
+                    ],
+                    "example": "USDT"
+                },
+                "network": {
+                    "type": "string",
+                    "enum": [
+                        "trx"
+                    ],
+                    "example": "trx"
+                }
+            }
+        },
+        "internal_transport_http_handler_accounts_protected.initDepositResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "TVCxeTNnWaCAt6fEoCz4WDsmZfTW86HtWd"
+                },
+                "min_confirmations": {
+                    "type": "integer",
+                    "example": 17
+                }
+            }
+        },
+        "internal_transport_http_handler_accounts_protected.initWithdrawalRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "asset",
+                "fee_tier",
+                "network",
+                "to_address"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 1200.056
+                },
+                "asset": {
+                    "type": "string",
+                    "enum": [
+                        "USDT"
+                    ],
+                    "example": "USDT"
+                },
+                "fee_tier": {
+                    "type": "string",
+                    "enum": [
+                        "slow",
+                        "standard",
+                        "fast"
+                    ],
+                    "example": "standard"
+                },
+                "network": {
+                    "type": "string",
+                    "enum": [
+                        "trx"
+                    ],
+                    "example": "trx"
+                },
+                "to_address": {
+                    "type": "string",
+                    "example": "TVCxeTNnWaCAt6fEoCz4WDsmZfTW86HtWd"
+                }
+            }
+        },
+        "internal_transport_http_handler_accounts_protected.topUpUserAccountRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "asset",
+                "userId"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 100
+                },
+                "asset": {
+                    "type": "string",
+                    "enum": [
+                        "USDT"
+                    ],
+                    "example": "USDT"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Local funding for checkout test"
+                },
+                "idempotencyKey": {
+                    "type": "string",
+                    "example": "dev-topup-user-1-usdt-100"
+                },
+                "userId": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "internal_transport_http_handler_accounts_protected.topUpUserAccountResponse": {
+            "type": "object",
+            "properties": {
+                "journalId": {
+                    "type": "integer",
+                    "example": 115
+                },
+                "status": {
+                    "type": "string",
+                    "example": "completed"
+                }
+            }
+        },
+        "internal_transport_http_handler_accounts_protected.transferRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "asset",
+                "toUserNumber"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 1200.056
+                },
+                "asset": {
+                    "type": "string",
+                    "enum": [
+                        "USDT"
+                    ],
+                    "example": "USDT"
+                },
+                "toUserNumber": {
+                    "type": "integer",
+                    "example": 148728641822
+                }
+            }
+        },
+        "internal_transport_http_handler_accounts_protected.transferResponse": {
+            "type": "object",
+            "properties": {
+                "journalId": {
+                    "type": "integer",
+                    "example": 115
+                },
+                "status": {
+                    "type": "string",
+                    "example": "completed"
+                }
+            }
+        },
+        "internal_transport_http_handler_accounts_protected.withdrawalOperationsRequest": {
+            "type": "object",
+            "required": [
+                "operation",
+                "withdrawalRequestId"
+            ],
+            "properties": {
+                "operation": {
+                    "type": "string",
+                    "enum": [
+                        "reject",
+                        "resend"
+                    ],
+                    "example": "resend"
+                },
+                "withdrawalRequestId": {
+                    "type": "integer",
+                    "example": 310
+                }
+            }
+        },
+        "internal_transport_http_handler_blockchain.chainConfigListItem": {
+            "type": "object",
+            "properties": {
+                "addressRegex": {
+                    "type": "string",
+                    "example": "^T[1-9A-HJ-NP-Za-km-z]{33}$"
+                },
+                "addressUrl": {
+                    "type": "string",
+                    "example": "https://nile.tronscan.org/#/address/"
+                },
+                "assetName": {
+                    "type": "string",
+                    "example": "USDT"
+                },
+                "blockUrl": {
+                    "type": "string",
+                    "example": "https://nile.tronscan.org/#/"
+                },
+                "confirmFinality": {
+                    "type": "integer",
+                    "example": 19
+                },
+                "contractAddressUrl": {
+                    "type": "string",
+                    "example": "https://nile.tronscan.org/#/token20/"
+                },
+                "decimals": {
+                    "type": "integer",
+                    "example": 8
+                },
+                "depositFee": {
+                    "type": "number",
+                    "example": 1.1501
+                },
+                "depositFeeType": {
+                    "type": "string",
+                    "example": "fix_amount"
+                },
+                "dustThreshold": {
+                    "type": "number",
+                    "example": 0.001
+                },
+                "estimatedArrivalTime": {
+                    "type": "integer",
+                    "example": 150
+                },
+                "minConfirmations": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "status": {
+                    "type": "string",
+                    "example": "all"
+                },
+                "txUrl": {
+                    "type": "string",
+                    "example": "https://nile.tronscan.org/#/transaction/"
+                },
+                "withdrawFee": {
+                    "type": "number",
+                    "example": 0.45
+                },
+                "withdrawFeeType": {
+                    "type": "string",
+                    "example": "percent"
+                }
+            }
+        },
+        "internal_transport_http_handler_blockchain.chainConfigListResponse": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "additionalProperties": {
+                    "$ref": "#/definitions/internal_transport_http_handler_blockchain.chainConfigListItem"
+                }
+            }
+        },
+        "internal_transport_http_handler_blockchain.getFeeItem": {
+            "type": "object",
+            "properties": {
+                "estimated_fee": {
+                    "type": "number",
+                    "example": 0.1098
+                },
+                "estimated_fee_asset": {
+                    "type": "number",
+                    "example": 1.0046
+                },
+                "estimated_time": {
+                    "type": "integer",
+                    "example": 140
+                },
+                "gas_price": {
+                    "type": "number",
+                    "example": 0.0056
+                }
+            }
+        },
+        "internal_transport_http_handler_blockchain.getFeeResponse": {
+            "type": "object",
+            "properties": {
+                "energy_price_sun": {
+                    "type": "number",
+                    "example": 0.056
+                },
+                "estimated_energy": {
+                    "type": "number",
+                    "example": 0.78
+                },
+                "fast": {
+                    "$ref": "#/definitions/internal_transport_http_handler_blockchain.getFeeItem"
+                },
+                "network": {
+                    "type": "string",
+                    "example": "trx"
+                },
+                "slow": {
+                    "$ref": "#/definitions/internal_transport_http_handler_blockchain.getFeeItem"
+                },
+                "standard": {
+                    "$ref": "#/definitions/internal_transport_http_handler_blockchain.getFeeItem"
+                },
+                "unit": {
+                    "type": "string",
+                    "example": "USDT"
+                }
+            }
+        },
+        "internal_transport_http_handler_blockchain_webhooks.processTxRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "confirmations",
+                "currency",
+                "from_address",
+                "network",
+                "request_id",
+                "required_confirmations",
+                "status",
+                "to_address",
+                "type"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 1200.056
+                },
+                "confirmations": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "currency": {
+                    "type": "string",
+                    "enum": [
+                        "USDT"
+                    ],
+                    "example": "USDT"
+                },
+                "from_address": {
+                    "type": "string",
+                    "example": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+                },
+                "network": {
+                    "type": "string",
+                    "enum": [
+                        "trx"
+                    ],
+                    "example": "trx"
+                },
+                "request_id": {
+                    "type": "string",
+                    "example": "1234567890"
+                },
+                "required_confirmations": {
+                    "type": "integer",
+                    "example": 17
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "new",
+                        "pending",
+                        "confirmed",
+                        "failed",
+                        "ignored",
+                        "blocked",
+                        "pending_signatures"
+                    ],
+                    "example": "new"
+                },
+                "to_address": {
+                    "type": "string",
+                    "example": "3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy"
+                },
+                "txid": {
+                    "type": "string",
+                    "example": "dee1805a013369317c9df462376881e4a56679fc05a01cecec46e059e377820c"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "incoming",
+                        "outgoing"
+                    ],
+                    "example": "incoming"
+                }
+            }
+        },
+        "internal_transport_http_handler_history_protected.depositDetailsResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 1200.084
+                },
+                "assetCode": {
+                    "type": "string",
+                    "example": "USDT"
+                },
+                "blockchainTxConfirmations": {
+                    "type": "integer",
+                    "example": 17
+                },
+                "blockchainTxConfirmedAt": {
+                    "type": "string",
+                    "example": "2026-03-02T06:31:43Z"
+                },
+                "blockchainTxFromAddress": {
+                    "type": "string",
+                    "example": "TVCxeTNnWaCAt6fEoCz4WDsmZfTW86HtWd"
+                },
+                "blockchainTxID": {
+                    "type": "string",
+                    "example": "dee1805a013369317c9df462376881e4a56679fc05a01cecec46e059e377820c"
+                },
+                "blockchainTxStatus": {
+                    "type": "string",
+                    "example": "confirmed"
+                },
+                "blockchainTxToAddress": {
+                    "type": "string",
+                    "example": "TCtvPqALz7cSTguGMTVeqhFBXevthJzUSt"
+                },
+                "blockchainTxType": {
+                    "type": "string",
+                    "example": "inbound"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-03-02T06:31:43Z"
+                },
+                "fee": {
+                    "type": "number",
+                    "example": 1.012
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "network": {
+                    "type": "string",
+                    "example": "trx"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
+        "internal_transport_http_handler_history_protected.depositListItem": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "TVCxeTNnWaCAt6fEoCz4WDsmZfTW86HtWd"
+                },
+                "amount": {
+                    "type": "number",
+                    "example": 1200.075
+                },
+                "assetCode": {
+                    "type": "string",
+                    "example": "USDT"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-03-02T06:31:43Z"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 34
+                },
+                "network": {
+                    "type": "string",
+                    "example": "trx"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
+        "internal_transport_http_handler_history_protected.depositListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_transport_http_handler_history_protected.depositListItem"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/http.Pagination"
+                }
+            }
+        },
+        "internal_transport_http_handler_history_protected.transactionListItem": {
+            "type": "object",
+            "properties": {
+                "accountType": {
+                    "type": "string",
+                    "example": "liability"
+                },
+                "amount": {
+                    "type": "number",
+                    "example": 1200.056
+                },
+                "assetCode": {
+                    "type": "string",
+                    "example": "USDT"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-03-02T06:31:43Z"
+                },
+                "entryType": {
+                    "type": "string",
+                    "example": "withdrawal_request"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 120
+                },
+                "status": {
+                    "type": "string",
+                    "example": "debit"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "completed"
+                }
+            }
+        },
+        "internal_transport_http_handler_history_protected.transactionListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_transport_http_handler_history_protected.transactionListItem"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/http.Pagination"
+                }
+            }
+        },
+        "internal_transport_http_handler_history_protected.transferListItem": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 1200.075
+                },
+                "assetCode": {
+                    "type": "string",
+                    "example": "USDT"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-03-02T06:31:43Z"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 34
+                },
+                "incoming": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "internal_transport_http_handler_history_protected.transferListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_transport_http_handler_history_protected.transferListItem"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/http.Pagination"
+                }
+            }
+        },
+        "internal_transport_http_handler_history_protected.withdrawalDetailsResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "TVCxeTNnWaCAt6fEoCz4WDsmZfTW86HtWd"
+                },
+                "amount": {
+                    "type": "number",
+                    "example": 1200.084
+                },
+                "assetCode": {
+                    "type": "string",
+                    "example": "USDT"
+                },
+                "blockchainTxConfirmations": {
+                    "type": "integer",
+                    "example": 17
+                },
+                "blockchainTxConfirmedAt": {
+                    "type": "string",
+                    "example": "2026-03-02T06:31:43Z"
+                },
+                "blockchainTxFromAddress": {
+                    "type": "string",
+                    "example": "TVCxeTNnWaCAt6fEoCz4WDsmZfTW86HtWd"
+                },
+                "blockchainTxID": {
+                    "type": "string",
+                    "example": "dee1805a013369317c9df462376881e4a56679fc05a01cecec46e059e377820c"
+                },
+                "blockchainTxStatus": {
+                    "type": "string",
+                    "example": "confirmed"
+                },
+                "blockchainTxToAddress": {
+                    "type": "string",
+                    "example": "TCtvPqALz7cSTguGMTVeqhFBXevthJzUSt"
+                },
+                "blockchainTxType": {
+                    "type": "string",
+                    "example": "inbound"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-03-02T06:31:43Z"
+                },
+                "fee": {
+                    "type": "number",
+                    "example": 1.012
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "network": {
+                    "type": "string",
+                    "example": "trx"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
+        "internal_transport_http_handler_history_protected.withdrawalListItem": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "TVCxeTNnWaCAt6fEoCz4WDsmZfTW86HtWd"
+                },
+                "amount": {
+                    "type": "number",
+                    "example": 1200.075
+                },
+                "assetCode": {
+                    "type": "string",
+                    "example": "USDT"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2026-03-02T06:31:43Z"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 34
+                },
+                "network": {
+                    "type": "string",
+                    "example": "trx"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
+        "internal_transport_http_handler_history_protected.withdrawalListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_transport_http_handler_history_protected.withdrawalListItem"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/http.Pagination"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "Authorization": {
+            "description": "Provide your auth token",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

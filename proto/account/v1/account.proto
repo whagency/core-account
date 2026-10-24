@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package account.v1;
+
+option go_package = "internal/transport/grpc/pb/accountv1;accountv1";
+
+enum JournalBizType {
+  JOURNAL_BIZ_TYPE_UNSPECIFIED = 0;
+  JOURNAL_BIZ_TYPE_CHECKOUT_PAYMENT = 1;
+  JOURNAL_BIZ_TYPE_CHECKOUT_PAYMENT_HOLD = 2;
+  JOURNAL_BIZ_TYPE_CHECKOUT_PAYMENT_HOLD_RELEASE = 3;
+}
+
+enum JournalStatus {
+  JOURNAL_STATUS_UNSPECIFIED = 0;
+  JOURNAL_STATUS_PENDING = 1;
+  JOURNAL_STATUS_COMPLETED = 2;
+  JOURNAL_STATUS_FAILED = 3;
+  JOURNAL_STATUS_CANCELLED = 4;
+  JOURNAL_STATUS_REVERSED = 5;
+}
+
+service AccountService {
+  rpc MakeTransaction (MakeTransactionRequest) returns (MakeTransactionResponse);
+  rpc AutomaticManualApproveDeposits (AutomaticManualApproveDepositsRequest) returns (AutomaticManualApproveDepositsResponse);
+
+  // GetJournalByIdempotencyKey looks up a journal entry without creating one.
+  //
+  // MakeTransaction already returns an existing journal when the idempotency key
+  // matches, but it creates one when it does not — so it cannot be used to probe.
+  // Callers that need to find out whether a posting exists (compensation and
+  // reconciliation flows) need a read-only path.
+  //
+  // Note that RollbackTransaction renames the original key so the business
+  // operation can be re-attempted. A reversed journal is therefore not found
+  // under its original key, which is the correct answer for a caller asking
+  // "is there a live posting to compensate?".
+  rpc GetJournalByIdempotencyKey (GetJournalByIdempotencyKeyRequest) returns (GetJournalByIdempotencyKeyResponse);
+}
+
+message MakeTransactionRequest {
+  JournalBizType type = 1;
+  uint64 user_id = 2;
+  optional uint64 to_user_id = 3;
+  string asset_code = 4;
+  string amount = 5;
+  optional string fee = 6;
+  optional string idempotency_key = 8;
+  optional string description = 9;
+}
+
+message MakeTransactionResponse {
+  uint64 journal_id = 1;
+  JournalStatus status = 2;
+}
+
+message GetJournalByIdempotencyKeyRequest {
+  // type and idempotency_key together reproduce the stored key: the server
+  // derives it the same way MakeTransaction does.
+  JournalBizType type = 1;
+  string idempotency_key = 2;
+}
+
+message GetJournalByIdempotencyKeyResponse {
+  bool found = 1;
+  uint64 journal_id = 2;
+  JournalStatus status = 3;
+}
+
+message AutomaticManualApproveDepositsRequest {
+  uint64 user_id = 1;
+}
+
+message AutomaticManualApproveDepositsResponse {}

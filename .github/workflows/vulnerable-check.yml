@@ -1,0 +1,38 @@
+name: Vulnerable Check
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  vulnerable-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Configure private module access
+        run: |
+          git config --global url."https://${{ secrets.PRIVATE_REPO_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Drop local common replace for CI
+        run: |
+          go mod edit -dropreplace github.com/whagency/core-common || true
+
+      - name: Run govulncheck
+        env:
+          GOPRIVATE: github.com/whagency/*
+          GOFLAGS: -mod=mod
+        run: |
+          go run golang.org/x/vuln/cmd/govulncheck@v1.1.4 ./...

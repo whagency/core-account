@@ -1,0 +1,134 @@
+version: "2"
+run:
+  timeout: 5m
+  relative-path-mode: gomod
+  tests: true
+
+linters:
+  default: none
+  exclusions:
+    paths:
+      - '^vendor/'
+      - '^mocks/'
+      - '^testdata/'
+      - '^test/'
+      - '^tests/'
+      - '.*\.pb\.go$'
+      - '.*\.gen\.go$'
+    rules:
+      - linters: [revive]
+        text: "unused-parameter: parameter '.*' seems to be unused, consider removing or renaming it as _"
+      - linters: [gochecknoinits]
+        path: '^docs/'
+      - linters: [misspell]
+        path: '^docs/'
+      - path: '_test\.go'
+        linters:
+          - dupl
+          - funlen
+          - gocyclo
+          - gocritic
+          - lll
+          - mnd
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - contextcheck
+    - depguard
+    - dogsled
+    - dupl
+    - durationcheck
+    - errcheck
+    - errorlint
+    - funlen
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
+    - gomoddirectives
+    - mnd
+    - gosec
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - nakedret
+    - nilerr
+    - nilnil
+    - noctx
+    - nolintlint
+    - prealloc
+    - predeclared
+    - reassign
+    - revive
+    - staticcheck
+    - tagliatelle
+    - unconvert
+    - unparam
+    - unused
+    - usestdlibvars
+    - wastedassign
+  settings:
+    depguard:
+      rules:
+        main:
+          list-mode: lax
+          deny:
+            - pkg: github.com/sirupsen/logrus
+              desc: "use the internal logger instead"
+    dupl:
+      threshold: 100
+    funlen:
+      lines: 100
+      statements: 50
+    goconst:
+      min-len: 2
+      min-occurrences: 3
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - performance
+        - style
+      disabled-checks:
+        - dupImport
+        - ifElseChain
+        - octalLiteral
+        - whyNoLint
+    gocyclo:
+      min-complexity: 15
+    mnd:
+      checks:
+        - argument
+        - case
+        - condition
+        - return
+      ignored-numbers:
+        - '2'
+        - '3'
+      ignored-functions:
+        - '^strings\.SplitN$'
+    gosec:
+      confidence: medium
+    govet:
+      enable:
+        - shadow
+    lll:
+      line-length: 160
+    misspell:
+      locale: US
+    nolintlint:
+      allow-unused: false
+      require-explanation: true
+      require-specific: true
+    revive:
+      severity: warning
+      confidence: 0.8
+      rules:
+        - name: if-return
+        - name: superfluous-else
+        - name: increment-decrement
+        - name: empty-lines
+        - name: argument-limit
+          arguments: [7]
